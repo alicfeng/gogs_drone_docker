@@ -1,0 +1,41 @@
+version: "2"
+services:
+  gogs:
+    container_name: gogs
+    image: gogs/gogs
+    ports:
+      - 3000:3000
+    volumes:
+      - ./srv/gogs/data:/data
+    restart: always
+
+  drone-server:
+    container_name: drone_server
+    image: drone/drone:0.8.6
+    ports:
+      - 8000:8000
+    volumes:
+      - ./srv/drone:/var/lib/drone/
+    environment:
+      - DRONE_OPEN=true
+      - DRONE_HOST=http://drone-server:8000
+      - DRONE_GOGS_URL={$gogs_url}
+      - DRONE_DEBUG=true
+      - DRONE_SECRET={run this command `openssl rand -hex 16`}
+      - DRONE_GOGS=true
+      - DRONE_GOGS_SKIP_VERIFY=false
+      - DRONE_GOGS_PRIVATE_MODE=true
+    restart: always
+
+  drone-agent:
+    container_name: drone_agent
+    image: drone/agent:0.8.6
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_SERVER=drone-server:9000
+      - DRONE_SECRET={run this command `openssl rand -hex 16`}
+      - DRONE_DEBUG=true
+    restart: always
