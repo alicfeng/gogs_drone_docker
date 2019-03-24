@@ -1,0 +1,24 @@
+pipeline:
+  build-test:
+    image: motecshine/laravelphp71
+    commands:
+      - composer config repo.packagist composer https://packagist.phpcomposer.com
+      - composer clearcache
+      - composer install --no-scripts --no-dev
+      - $(pwd)/vendor/bin/phpunit $(pwd)/tests/Feature/AiXin/ComputePremiumTest.php
+      - phpunit
+
+  deploy-dev:
+    image: appleboy/drone-ssh
+    host: {$host}
+    username: {$username}
+    password: {$password}
+    port: {$port}
+    command_timeout: 300
+    script:
+      - cd /www/api.xxx.com
+      - git pull
+      - /home/service/php/bin/php artisan config:cache
+      - /home/service/php/bin/php artisan route:cache
+      - /home/service/php/bin/php artisan optimize
+      - supervisorctl reload
