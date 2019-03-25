@@ -7,37 +7,43 @@ services:
       - 3000:3000
     volumes:
       - ./data/gogs/data:/data
+    environment:
+      - TZ=Asia/Shanghai
     restart: always
 
   drone-server:
-    container_name: drone_server
-    image: drone/drone:0.8.6
+    image: drone/drone:1.0.0-rc.6
+    container_name: drone-server
     ports:
-      - 8000:8000
+      - 8000:80
     volumes:
-      - ./data/drone:/var/lib/drone/
-    depends_on:
-      - gogs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/drone/:/var/lib/drone
     environment:
       - DRONE_OPEN=true
-      - DRONE_HOST=http://drone-server:8000
-      - DRONE_GOGS_URL=http://gogs:3000
+      - DRONE_SERVER_HOST=drone-server:8000
       - DRONE_DEBUG=true
-      - DRONE_SECRET=7b4eb5caee376cf81a2fcf7181e66175
+      - DRONE_GIT_ALWAYS_AUTH=false
       - DRONE_GOGS=true
       - DRONE_GOGS_SKIP_VERIFY=false
-      - DRONE_GOGS_PRIVATE_MODE=true
+      - DRONE_GOGS_SERVER={http://192.168.2.148:3000}
+      - DRONE_PROVIDER=gogs
+      - DRONE_SERVER_PROTO=http
+      - DRONE_RPC_SECRET=7b4eb5caee376cf81a2fcf7181e66175
+      - TZ=Asia/Shanghai
     restart: always
 
   drone-agent:
-    container_name: drone_agent
-    image: drone/agent:0.8.6
+    image: drone/agent:1.0.0-rc.6
+    container_name: drone-agent
     depends_on:
       - drone-server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DRONE_SERVER=drone-server:9000
-      - DRONE_SECRET=7b4eb5caee376cf81a2fcf7181e66175
+      - DRONE_RPC_SERVER={192.168.2.148:9000}
+      - DRONE_RPC_SECRET=7b4eb5caee376cf81a2fcf7181e66175
+      - DRONE_RUNNER_CAPACITY=2
       - DRONE_DEBUG=true
+      - TZ=Asia/Shanghai
     restart: always
