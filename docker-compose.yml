@@ -31,6 +31,8 @@ services:
       - DRONE_SERVER_PROTO=http
       - DRONE_RPC_SECRET=7b4eb5caee376cf81a2fcf7181e66175
       - DRONE_USER_CREATE=username:alic,admin:true
+      - DRONE_DATABASE_DATASOURCE=/var/lib/drone/drone.sqlite
+      - DRONE_DATABASE_DRIVER=sqlite3
       - TZ=Asia/Shanghai
     restart: always
 
