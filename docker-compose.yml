@@ -26,10 +26,11 @@ services:
       - DRONE_GIT_ALWAYS_AUTH=false
       - DRONE_GOGS=true
       - DRONE_GOGS_SKIP_VERIFY=false
-      - DRONE_GOGS_SERVER={http://192.168.2.148:3000}
+      - DRONE_GOGS_SERVER={http://192.168.xx.xx:3000}
       - DRONE_PROVIDER=gogs
       - DRONE_SERVER_PROTO=http
       - DRONE_RPC_SECRET=7b4eb5caee376cf81a2fcf7181e66175
+      - DRONE_USER_CREATE=username:alic,admin:true
       - TZ=Asia/Shanghai
     restart: always
 
@@ -41,7 +42,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DRONE_RPC_SERVER={192.168.2.148:9000}
+      - DRONE_RPC_SERVER={192.168.xx.xx:9000}
       - DRONE_RPC_SECRET=7b4eb5caee376cf81a2fcf7181e66175
       - DRONE_RUNNER_CAPACITY=2
       - DRONE_DEBUG=true
