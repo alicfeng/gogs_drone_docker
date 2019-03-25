@@ -7,13 +7,24 @@
 > GitLab + Jenkins该组合还是一个不错的选择，我并没有反对，为何呢？GitLab是一个非常成熟的git工具之一，同时Jenkins也是非常成熟的CICD组件，功能非常强大。
 > 但是我还是要站在正义的一边，选择`Drone` + `Gogs`。O(∩_∩)O哈哈~
 
-## 环境
+
+
+#### 说明
+
+`drone`升级使用`1.0.0-rc6`版本，此版本并非稳定版本，推荐使用`1`版本甚至是`0.8.6`更稳定的版本。`1.0`后的版本较之前而言，配置更加灵活、优化版本，同时界面也变化了。[drone](https://drone.io/)
+
+
+
+#### 环境
+
 使用的前提，必须符合以下条件
 - 系统安装了`Docker`，同时要安装了`Docker`编排工具`docker-compose`
 - 主流的`x64`位系统，`Linux`、`Mac`、`Window`等
 - 安装了`git`版本控制工具
 
-## 安装
+
+
+#### 安装
 安装非常简单，拉取`docker-compose.yml`编排文件，基于`Docker`环境自动构建即可！
 **同步至[github](https://github.com/alicfeng/gogs-drone-docker) | [戳戳戳](https://github.com/alicfeng/gogs-drone-docker)**
 ```shell
@@ -32,7 +43,9 @@ cd gogs-drone-docker && docker-compose up -d
 - `Drone`登录的账号需要在`Gogs`设置为管理员，他俩兄弟的账密是互通的
 - `Gogs`的仓库会自动同步到`Drone`上，此时，需要在`Drone`开启钩子才能正常运行
 
-## 使用
+
+
+#### 使用
 好了，是时候来体验两把了，这里需要有一个前提了，O(∩_∩)O哈哈~，你需要了解它是如何运行的，根据什么来自动化构建的
 每当分支的代码更新的时候，Gogs会动过钩子同步通知Drone，而Drone收到通知之后会发生一系列动作
  - 通过git插件`clone`分支代码到容器里面
@@ -42,7 +55,8 @@ cd gogs-drone-docker && docker-compose up -d
  - 部署至生产环境
  - 发送邮件等通知信息，这里还有很多插件，比如微信、钉钉、电报等
 
-构建的剧本是通过`.drone.yml`文件编排的，基于`Docker`镜像进行构建，很nice~下面简单体验下`Laravel`项目的即可！
+   构建的剧本是通过`.drone.yml`文件编排的，基于`Docker`镜像进行构建，很nice~下面简单体验下`Laravel`项目的即可！[github](https://github.com/alicfeng/gogs-drone-docker) 有`laravel`、`vue`等前后端编排的`yml`文件。
+
 ```yml
 pipeline:
   build:
@@ -53,7 +67,9 @@ pipeline:
     - composer install --no-scripts --no-dev
     # others
 ```
-![AlicFeng](https://iocaffcdn.phphub.org/uploads/images/201812/23/29791/U6UpZ7xr3C.png!large)
+![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/master/file/image3.png)
+
+![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/master/file/image2.png)
 
 
 **[价值源于技术，技术源于分享](https://github.com/alicfeng)**
