@@ -67,9 +67,9 @@ pipeline:
     - composer install --no-scripts --no-dev
     # others
 ```
-![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/master/file/image3.png)
+![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/1.0/file/image3.png)
 
-![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/master/file/image2.png)
+![drone](https://raw.githubusercontent.com/alicfeng/gogs-drone-docker/1.0/file/image2.png)
 
 
 **[价值源于技术，技术源于分享](https://github.com/alicfeng)**
