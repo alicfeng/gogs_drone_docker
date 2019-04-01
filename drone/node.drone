@@ -1,7 +1,80 @@
 pipeline:
-  build:
-    image: node
+  restore-cache:
+    image: drillster/drone-volume-cache
+    restore: true
+    mount:
+    - ./node_modules
+    volumes:
+    # Mount the cache volume, needs "Trusted" | https://docs.drone.io/administration/user/admins/
+    # DRONE_USER_CREATE=username:{alicfeng},admin:true
+    # source path {/tmp/cache/composer need to mkdir on server}
+    - /tmp/cache/node_modules:/cache
+
+
+  build-tests:
+    image: node:latest
     commands:
+    - node -v && npm -v
     - npm install -g cnpm --registry=https://registry.npm.taobao.org
-    - npm install
+    - cnpm install
     - npm run build
+
+
+  rebuild-cache:
+    image: drillster/drone-volume-cache
+    rebuild: true
+    mount:
+    - ./node_modules
+    volumes:
+    - /tmp/cache/node_modules:/cache
+
+
+  sit-deploy:
+    image: appleboy/drone-ssh
+    host: $host
+    username: $username
+    password: $password
+    port: $port
+    command_timeout: 300s
+    script:
+    # sit env deploy shell script list
+      - cd /www/code.samego.com/
+      - git pull
+      - git pull
+      - cnpm install -ddd
+      - npm run build -ddd
+
+  prod-deploy:
+    image: appleboy/drone-ssh
+    host: $host
+    username: $username
+    password: $password
+    port: $port
+    command_timeout: 300s
+    script:
+      # prod env deploy shell script list
+      # todo awaiting extend to deploy | main scp
+      - node -v && npm -v
+      - cd /www/code.samego.com/
+      - git pull
+      - cnpm install -ddd
+      - npm run build -ddd
+    when:
+      event:
+        - push
+      branch:
+        - prod
+
+
+  mail-notify:
+    image: drillster/drone-email
+    from: $from
+    host: smtp.163.com
+    username: $username
+    password: $password
+    port: 465
+    subject: CICD fail notify
+    recipients:
+    - a@samego.com
+    when:
+      status: [ failure ]
