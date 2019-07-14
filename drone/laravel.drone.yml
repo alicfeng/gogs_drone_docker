@@ -1,5 +1,6 @@
 pipeline:
-  restore-cache:
+  # load cache
+  load-composer-cache:
     image: drillster/drone-volume-cache
     restore: true
     mount:
@@ -10,6 +11,7 @@ pipeline:
       # source path {/tmp/cache/composer need to mkdir on server}
       - /tmp/cache/composer:/cache
 
+  # case test
   build-tests:
     image: lorisleiva/laravel-docker:7.3
     commands:
@@ -17,6 +19,7 @@ pipeline:
       - composer install -vvv
       - ./vendor/phpunit/phpunit/phpunit
 
+  # rebuild compose cache
   rebuild-composer-cache:
     image: drillster/drone-volume-cache
     rebuild: true
@@ -25,6 +28,7 @@ pipeline:
     volumes:
       - /tmp/cache/composer:/cache
 
+  # deploy on dev env
   deploy-dev:
     image: appleboy/drone-ssh
     host: {$host}
@@ -39,7 +43,13 @@ pipeline:
       - /home/service/php/bin/php artisan route:cache
       - /home/service/php/bin/php artisan optimize
       - supervisorctl reload
+    when:
+      event:
+        - push
+      branch:
+        - master
 
+  # notify by email
   notify:
     image: drillster/drone-email
     from: {email}
