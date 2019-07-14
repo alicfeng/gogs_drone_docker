@@ -10,20 +10,12 @@ pipeline:
       # source path {/tmp/cache/composer need to mkdir on server}
       - /tmp/cache/composer:/cache
 
-  deploy-dev:
-    image: appleboy/drone-ssh
-    host: {$host}
-    username: {$username}
-    password: {$password}
-    port: {$port}
-    command_timeout: 300
-    script:
-      - cd /www/api.xxx.com
-      - git pull
-      - /home/service/php/bin/php artisan config:cache
-      - /home/service/php/bin/php artisan route:cache
-      - /home/service/php/bin/php artisan optimize
-      - supervisorctl reload
+  build-tests:
+    image: lorisleiva/laravel-docker:7.3
+    commands:
+      - mv $(pwd)/.env.drone $(pwd)/.env
+      - composer install -vvv
+      - ./vendor/phpunit/phpunit/phpunit
 
   rebuild-composer-cache:
     image: drillster/drone-volume-cache
