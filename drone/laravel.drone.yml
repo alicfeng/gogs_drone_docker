@@ -27,10 +27,10 @@ pipeline:
 
   deploy-dev:
     image: appleboy/drone-ssh
-    host: 120.78.205.234
-    username: root
-    password: 123!@#qwe
-    port: 22
+    host: {$host}
+    username: {$username}
+    password: {$password}
+    port: {$port}
     command_timeout: 30000s
     script:
       - cd /www/api.yi-insurance.com
