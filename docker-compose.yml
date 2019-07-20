@@ -2,7 +2,7 @@ version: "2"
 services:
   gogs:
     container_name: gogs
-    image: gogs/gogs
+    image: gogs/gogs:0.11.86
     ports:
       - 3000:3000
     volumes:
@@ -12,7 +12,7 @@ services:
     restart: always
 
   drone-server:
-    image: drone/drone:1.0.0-rc.6
+    image: drone/drone:1.2.1
     container_name: drone-server
     ports:
       - 8000:80
@@ -37,7 +37,7 @@ services:
     restart: always
 
   drone-agent:
-    image: drone/agent:1.0.0-rc.6
+    image: drone/agent:1.2.1
     container_name: drone-agent
     depends_on:
       - drone-server
