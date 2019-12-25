@@ -1,0 +1,52 @@
+version: "2"
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    ports:
+      - 8880:80
+      - 8443:443
+    volumes:
+      - ./data/gitlab/etc:/etc/gitlab
+      - ./data/gitlab/log:/var/log/gitlab
+      - ./data/gitlab/opt:/var/opt/gitlab
+    restart: always
+
+  drone:
+    image: drone/drone:1
+    container_name: drone
+    ports:
+      - 9999:80
+    volumes:
+      - ./data/drone/:/data
+    environment:
+      - DRONE_AGENTS_ENABLED=true
+      - DRONE_GITLAB_SERVER=http://git.extremevision.com.cn
+      - DRONE_GITLAB_CLIENT_ID=a79c3a2e5a0b8f7a6b30cb467edd6f65bd6f9aad6ef3026a6598b0de5977462a
+      - DRONE_GITLAB_CLIENT_SECRET=c86ed3d4b0eb8415aff222bd2b4da9aa92984fe060db90d52a24a9d36be88aa1
+      - DRONE_RPC_SECRET=bea26a2221fd8090ea38720fc445eca6
+      - DRONE_SERVER_HOST=172.20.10.7:9999
+      - DRONE_TLS_AUTOCERT=false
+      - DRONE_GIT_USERNAME=lican.feng
+      - DRONE_GIT_PASSWORD=fenglican
+      - DRONE_SERVER_PROTO=http
+      - DRONE_LOGS_DEBUG=true
+      - TZ=Asia/Shanghai
+    restart: always
+
+  drone-runner:
+    image: drone/drone-runner-docker:1
+    container_name: drone-runner
+    ports:
+      - 3000:3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/drone/:/var/lib/drone
+    environment:
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_HOST=172.20.10.7:9999
+      - DRONE_RPC_SECRET=bea26a2221fd8090ea38720fc445eca6
+      - DRONE_RUNNER_CAPACITY=2
+      - DRONE_RUNNER_NAME=drone-runner
+      - TZ=Asia/Shanghai
+    restart: always
