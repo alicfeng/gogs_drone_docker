@@ -1,0 +1,170 @@
+kind: pipeline
+name: profession-cvmart
+type: docker
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+# 恢复缓存
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  volumes:
+    - name: cache
+      path: /cache
+  settings:
+    restore: true
+    mount:
+      - ./vendor
+  when:
+    event: push
+
+
+# 安装依赖
+- name: install-package
+  image: ccr.ccs.tencentyun.com/ev_applications/profession_cvmart:base_1.0.0
+  commands:
+    - COMPOSER_MEMORY_LIMIT=-1 /usr/local/bin/composer validate --no-check-all --strict
+    - COMPOSER_MEMORY_LIMIT=-1 /usr/local/bin/composer install --no-dev --prefer-dist --optimize-autoloader -vvv
+
+
+# 重建缓存
+- name: rebuild-cache
+  image: drillster/drone-volume-cache
+  volumes:
+    - name: cache
+      path: /cache
+  settings:
+    rebuild: true
+    mount:
+      - ./vendor
+  when:
+    event: push
+
+
+# 单元测试
+- name: run-phpunit
+  image: ccr.ccs.tencentyun.com/ev_applications/profession_cvmart:base_1.0.0
+  commands:
+    - ./vendor/phpunit/phpunit/phpunit
+
+
+# 构建镜像
+- name: build-image
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    repo: ccr.ccs.tencentyun.com/ev_applications/demo
+    registry: ccr.ccs.tencentyun.com
+    tags: ${DRONE_TAG=latest}
+    force_tag: true
+    pull_image: false
+
+
+# 构建接口文档镜像
+- name: build-apidoc
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    repo: ccr.ccs.tencentyun.com/ev_applications/profession_cvmart_apidoc
+    registry: ccr.ccs.tencentyun.com
+    tags: ${DRONE_TAG=latest}
+    force_tag: true
+    pull_image: false
+
+
+# 部署接口文档
+- name: deploy-apidoc
+  image: appleboy/drone-ssh
+  settings:
+    host:
+      from_secret: APIDOC_SERVER_HOST
+    username:
+      from_secret: APIDOC_SERVER_USERNAME
+    password:
+      from_secret: APIDOC_SERVER_PASSWORD
+    port: 22
+    script:
+      - cd /home/alicfeng/tutorial/ev/dev_tool/document
+      - docker-compose up -d
+
+
+# 部署测试环境
+- name: deploy-test
+  image: quay.io/honestbee/drone-kubernetes
+  kubernetes_server:
+    from_secret: KUBERNETES_TEST_SERVER
+  kubernetes_token:
+    from_secret: KUBERNETES_TEST_TOKEN
+  namespace:
+    from_secret: KUBERNETES_TEST_NAMESPACE
+  deployment: app-deployment
+  container: [k8s-app]
+  repo: ccr.ccs.tencentyun.com/ev_applications/demo
+  tag: latest
+  when:
+    event:
+      - push
+
+
+# 部署生产环境
+- name: deploy-prod
+  image: quay.io/honestbee/drone-kubernetes
+  kubernetes_server:
+    from_secret: KUBERNETES_TEST_SERVER
+  kubernetes_token:
+    from_secret: KUBERNETES_TEST_TOKEN
+  namespace:
+    from_secret: KUBERNETES_TEST_NAMESPACE
+  deployment: app-deployment
+  container: [k8s-app]
+  repo: ccr.ccs.tencentyun.com/ev_applications/demo
+  tag: latest
+  when:
+    event:
+      - tag
+
+
+# 邮件通知
+- name: notify-email
+  image: drillster/drone-email
+  settings:
+    from: 18814129510@163.com
+    host: smtp.163.com
+    username: 18814129510@163.com
+    password:
+      from_secret: NOTIFY_EMAIL_PASSWORD
+    port: 465
+    skip_verify: true
+    subject: CICD Profession Notify
+    recipients:
+      - a@samego.com
+  when:
+    status: [ failure, success ]
+
+
+
+# 挂载声明
+volumes:
+- name: cache
+  host:
+    path: /tmp/cache/composer
+
+# 依赖服务
+services:
+- name: redis-service
+  image: redis
+
+- name: mysql-service
+  image: mysql:5.7
+  environment:
+    MYSQL_ROOT_PASSWORD: ci
+    MYSQL_USER: ci
+    MYSQL_PASSWORD: ci
+    MYSQL_DATABASE: ci
