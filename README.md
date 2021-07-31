@@ -1,7 +1,11 @@
+> 基于 `Kubernetes` 部署方案于 [alicfeng/kubernetes_cicd](https://github.com/alicfeng/kubernetes_cicd) 仓库
+
 ## 前言
+
 `CI / CD`( 持续集成 / 持续部署  )方案是DevOps中不可或缺的流程之一，最近也了解了部分的相关的解决方案，最终选择了`Drone` + `Gogs`基于`docker`容器环境来构建`CI / CD`，本文将分享下如何构建此平台以及如何快速地使用到项目开发中。
 
 **应该会有一个疑问？我为什么不选择主流的`GitLab` + `Jenkins` 两个最佳搭档来构建呢？**
+
 - `GitLab`是使用`Ruby`编写的，`Jenkins`更是了不起，使用`Java`来编写的，项目整体比较膨大，同时它们对硬件、CPU等开销比较高
 - `Drone`、`Gogs`皆是使用`Go`语言来编写构建，在整体的语言性能与内存开销算是有一定的优势，同时`Drone`支持`Github`、`GitLab`、`Gogs`以及`Bitbucket`，这点很不错！反手就是一个赞?
 > GitLab + Jenkins该组合还是一个不错的选择，我并没有反对，为何呢？GitLab是一个非常成熟的git工具之一，同时Jenkins也是非常成熟的CICD组件，功能非常强大。
@@ -32,12 +36,13 @@ git clone https://github.com/alicfeng/gogs-drone-docker.git
 cd gogs-drone-docker && docker-compose up -d
 ```
 执行`docker ps`来看下容器的运行情况
-![alicfeng - docker ps](https://iocaffcdn.phphub.org/uploads/images/201812/23/29791/dpbpV6AFUM.png!large)
+![alicfeng - docker ps](https://laravel-china.org/uploads/images/201812/23/29791/dpbpV6AFUM.png)
+
 > 对应的配置文件可以根据项目的需求自由灵活改变，同时像我这样强迫症的人，我不喜欢使用`IP`来进行访问请求的以及`http`协议访问，我会使用`nginx`代理。[不详细说了](https://www.jianshu.com/p/5d36ccb5af88)
 
 至此，我们已经完成了平台的构建工作了。我们来欣赏下~干杯~
-![Gogs](https://iocaffcdn.phphub.org/uploads/images/201812/23/29791/5shaxU7QMn.png!large)
-![Drone](https://iocaffcdn.phphub.org/uploads/images/201812/23/29791/XufyITQfkI.png!large)
+![Gogs](https://laravel-china.org/uploads/images/201812/23/29791/5shaxU7QMn.png)
+![Drone](https://laravel-china.org/uploads/images/201812/23/29791/XufyITQfkI.png)
 
 有两个地方需要注意：
 - `Drone`登录的账号需要在`Gogs`设置为管理员，他俩兄弟的账密是互通的
