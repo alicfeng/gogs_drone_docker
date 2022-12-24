@@ -36,14 +36,14 @@ cd gogs-drone-docker && docker-compose up -d
 ```
 执行`docker ps`来看下容器的运行情况
 
-![docker ps](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/docker_ps.png)
+![docker ps](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/docker_ps.png)
 
 #### 还有一步，为 Drone 授权
 首先创建 `OAuth2` 应用，记得点击 `保存` 按钮
 
-![create_oauth2](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/create_oauth2.png)
+![create_oauth2](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/create_oauth2.png)
 
-![oauth_info](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/oauth_info.png)
+![oauth_info](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/oauth_info.png)
 
 创建完成后，将 `CLIENT_ID`、`CLIENT_SECRET` 复制进 `.env` 文件中，将容器 `down` 掉后重新构建
 ```shell
@@ -51,7 +51,7 @@ docker-compose down && docker-compose up -d
 ```
 访问 `Drone` 网站，点击跳转入以下界面，点击授权即可
 
-![create_oauth2](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/drone_%20authorization.png)
+![create_oauth2](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/drone_%20authorization.png)
 
 > 对应的配置文件可以根据项目的需求自由灵活改变，同时像我这样强迫症的人，我不喜欢使用`IP`来进行访问请求的以及`http`协议访问，我会使用`nginx`代理。[不详细说了](https://www.jianshu.com/p/5d36ccb5af88)
 
@@ -73,7 +73,7 @@ docker-compose down && docker-compose up -d
  - 部署至生产环境
  - 发送邮件等通知信息，这里还有很多插件，比如微信、钉钉、电报等
 
-   构建的剧本是通过`.drone.yml`文件编排的，基于`Docker`镜像进行构建，很nice~下面简单体验下`Laravel`项目的即可！[github](https://github.com/alicfeng/gogs_drone_docker/tree/1.0/drone) 有`laravel`、`vue`等前后端编排的`yml`文件。
+   构建的剧本是通过`.drone.yml`文件编排的，基于`Docker`镜像进行构建，很nice~下面简单体验下`Laravel`项目的即可！[github](https://github.com/alicfeng/gitea_drone_docker/tree/1.0/drone) 有`laravel`、`vue`等前后端编排的`yml`文件。
 
 ```yml
 pipeline:
@@ -85,9 +85,9 @@ pipeline:
     - composer install --no-scripts --no-dev
     # others
 ```
-![drone](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/image3.png)
+![drone](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/image3.png)
 
-![drone](https://github.com/klzdy123/gogs_drone_docker/blob/2.0/file/image2.png)
+![drone](https://github.com/klzdy123/gitea_drone_docker/blob/2.0/file/image2.png)
 
 
 **[价值源于技术，技术源于分享](https://github.com/alicfeng)**
