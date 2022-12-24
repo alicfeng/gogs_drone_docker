@@ -1,57 +1,61 @@
-version: '3'
+version: "3.7"
 services:
-  gogs:
-    container_name: gogs
-    image: gogs/gogs:0.12
-    ports:
-      - ${GOGS_PORT:-3000}:3000
-    volumes:
-      - ./.data/gogs/data:/data
-    environment:
-      - TZ=Asia/Shanghai
-    restart: always
-
-  drone-server:
-    image: drone/drone:1.2.1
-    container_name: drone-server
-    ports:
-      - ${DRONE_SERVER_PORT:-8000}:80
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./.data/drone/:/var/lib/drone
-    environment:
-      - DRONE_OPEN=true
-      - DRONE_SERVER_HOST=${DRONE_SERVER_IP}:${DRONE_SERVER_PORT:-8000}
-      - DRONE_DEBUG=true
-      - DRONE_GIT_ALWAYS_AUTH=false
-      - DRONE_GOGS=true
-      - DRONE_GOGS_SKIP_VERIFY=false
-      - DRONE_GOGS_SERVER=http://gogs:3000
-      - DRONE_PROVIDER=gogs
-      - DRONE_SERVER_PROTO=http
-      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
-      - DRONE_USER_CREATE=username:${DRONE_ADMIN},admin:true
-      - DRONE_DATABASE_DATASOURCE=/var/lib/drone/drone.sqlite
-      - DRONE_DATABASE_DRIVER=sqlite3
-      - TZ=Asia/Shanghai
-    restart: always
-
-  drone-agent:
-    image: drone/agent:1.2.1
-    container_name: drone-agent
-    depends_on:
-      - drone-server
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - DRONE_RPC_SERVER=drone-server:9000
-      - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
-      - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY:-2}
-      - DRONE_DEBUG=true
-      - TZ=Asia/Shanghai
-    restart: always
+    gitea:
+        container_name: gitea
+        image: gitea/gitea:1.15.7 # latest 以及 1.17.4 版本存在问题，无法触发 webhook
+        restart: always
+        ports:
+            - "${GITEA_SERVER_PORT:-3000}:3000"
+            - "${GITEA_SSH_PORT:-10022}:22"
+        environment:
+            - TZ=${TZ}
+            - USER_UID=1000
+            - USER_GID=1000
+            - SSH_PORT=${GITEA_SSH_PORT:-10022}
+            - GITEA__webhook__SKIP_TLS_VERIFY=true # webhook 跳过 tls 验证
+            - GITEA__webhook__DELIVER_TIMEOUT=10 # webhook 超时时间
+        volumes:
+            - ./data/gitea:/data
+            - /etc/timezone:/etc/timezone:ro
+            - /etc/localtime:/etc/localtime:ro
+        networks:
+            - dronenet
+    drone-server:
+        container_name: drone-server
+        image: drone/drone:latest
+        restart: always
+        ports:
+            - "${DRONE_SERVER_PORT:-8000}:80"
+        volumes:
+            - ./data/drone:/var/lib/drone/
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - DRONE_SERVER_HOST=${DRONE_SERVER_IP}:${DRONE_SERVER_PORT}
+            - DRONE_SERVER_PROTO=${DRONE_SERVER_PROTO}
+            - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+            - DRONE_GITEA_CLIENT_ID=${DRONE_GITEA_CLIENT_ID}
+            - DRONE_GITEA_CLIENT_SECRET=${DRONE_GITEA_CLIENT_SECRET}
+            - DRONE_GITEA_SERVER=${DRONE_GITEA_IP}:${GITEA_SERVER_PORT:-3000}
+            - DRONE_USER_CREATE=username:${DRONE_ADMIN},admin:true
+        networks:
+            - dronenet
+    drone-runner-docker:
+        container_name: drone-runner-docker
+        image: drone/drone-runner-docker:latest
+        restart: always
+        depends_on:
+            - drone-server
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - TZ=${TZ}
+            - DRONE_RPC_HOST=drone-server
+            - DRONE_RPC_PROTO=${DRONE_RPC_PROTO}
+            - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+            - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY}
+            - DRONE_RUNNER_NAME=${DRONE_RUNNER_NAME}
+        networks:
+            - dronenet
 
 networks:
-  default:
-    external:
-      name: ev-dev-network
+  dronenet:
